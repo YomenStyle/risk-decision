@@ -1,10 +1,10 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance;
 
-    [Header("Board Size")]
+    [Header("ë³´ë“œ í¬ê¸°")]
     public int width = 5;
     public int height = 4;
     public float tileSize = 1f;
@@ -17,7 +17,7 @@ public class BoardManager : MonoBehaviour
         grid = new GameObject[width, height];
     }
 
-    // ÁÂÇ¥ ¡æ ¿ùµå À§Ä¡
+    // ì¢Œí‘œ -> ì›”ë“œ ìœ„ì¹˜
     public Vector3 GridToWorld(Vector2Int gridPos)
     {
         return new Vector3(
@@ -27,7 +27,7 @@ public class BoardManager : MonoBehaviour
         );
     }
 
-    // ¿ùµå ¡æ ÁÂÇ¥
+    // ì›”ë“œ -> ì¢Œí‘œ
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
         return new Vector2Int(
@@ -36,21 +36,21 @@ public class BoardManager : MonoBehaviour
         );
     }
 
-    // ¹üÀ§ Ã¼Å©
+    // ë²”ìœ„ í™•ì¸
     public bool IsInsideBoard(Vector2Int pos)
     {
         return pos.x >= 0 && pos.x < width &&
                pos.y >= 0 && pos.y < height;
     }
 
-    // ¹èÄ¡ °¡´É?
+    // ë°°ì¹˜ ê°€ëŠ¥?
     public bool CanPlace(Vector2Int pos)
     {
         if (!IsInsideBoard(pos)) return false;
         return grid[pos.x, pos.y] == null;
     }
 
-    // À¯´Ö ¹èÄ¡
+    // ìœ ë‹› ë°°ì¹˜
     public void PlaceUnit(GameObject unit, Vector2Int pos)
     {
         if (!CanPlace(pos)) return;
@@ -59,7 +59,7 @@ public class BoardManager : MonoBehaviour
         unit.transform.position = GridToWorld(pos);
     }
 
-    // À¯´Ö Á¦°Å
+    // ìœ ë‹› ì œê±°
     public void RemoveUnit(Vector2Int pos)
     {
         if (!IsInsideBoard(pos)) return;
