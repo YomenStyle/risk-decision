@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using TMPro;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class BattleActionUI : MonoBehaviour
 {
-    [SerializeField] private BattleManager battleManager;
+    [SerializeField] private ChoiceManager choiceManager;
     [SerializeField] private RectTransform container;
     [SerializeField] private Button actionButtonPrefab;
     [SerializeField] private string[] actionLabels = { "안전", "중간", "도박" };
@@ -14,9 +14,9 @@ public class BattleActionUI : MonoBehaviour
 
     private void Awake()
     {
-        if (battleManager == null)
+        if (choiceManager == null)
         {
-            battleManager = FindObjectOfType<BattleManager>();
+            choiceManager = FindFirstObjectByType<ChoiceManager>();
         }
 
         EnsureEventSystem();
@@ -27,9 +27,25 @@ public class BattleActionUI : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (choiceManager != null)
+        {
+            choiceManager.ChoicesChanged += BuildButtons;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (choiceManager != null)
+        {
+            choiceManager.ChoicesChanged -= BuildButtons;
+        }
+    }
+
     private void Start()
     {
-        if (battleManager == null || container == null || actionButtonPrefab == null)
+        if (choiceManager == null || container == null || actionButtonPrefab == null)
         {
             Debug.LogWarning("BattleActionUI missing references.");
             return;
@@ -38,13 +54,16 @@ public class BattleActionUI : MonoBehaviour
         BuildButtons();
     }
 
-    // UI is provided by the scene; assign container in the inspector.
-
     private void BuildButtons()
     {
+        if (choiceManager == null || container == null || actionButtonPrefab == null)
+        {
+            return;
+        }
+
         ClearChildren(container);
 
-        int count = battleManager.PlayerActionCount;
+        int count = choiceManager.ChoiceCount;
         for (int i = 0; i < count; i++)
         {
             string label = GetLabel(i);
@@ -73,22 +92,22 @@ public class BattleActionUI : MonoBehaviour
             cardView.SetTitle(label);
             if (showSuccessChance)
             {
-                ActionData action = battleManager.GetPlayerAction(index);
+                ActionData action = choiceManager.GetChoice(index);
                 float chancePercent = action != null ? action.SuccessChance * 100f : 0f;
                 cardView.SetDetail(string.Format(successChanceFormat, chancePercent));
             }
         }
         else
         {
-        TMP_Text text = button.GetComponentInChildren<TMP_Text>();
-        if (text != null)
-        {
-            text.text = label;
-        }
-        else
-        {
-            Debug.LogWarning($"Action button prefab missing TMP_Text component: {button.name}");
-        }
+            TMP_Text text = button.GetComponentInChildren<TMP_Text>();
+            if (text != null)
+            {
+                text.text = label;
+            }
+            else
+            {
+                Debug.LogWarning($"Action button prefab missing TMP_Text component: {button.name}");
+            }
         }
 
         if (cardView == null && button.GetComponentInChildren<TMP_Text>() == null)
@@ -98,7 +117,7 @@ public class BattleActionUI : MonoBehaviour
 
         int capturedIndex = index;
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() => battleManager.TryExecutePlayerAction(capturedIndex));
+        button.onClick.AddListener(() => choiceManager.SelectChoice(capturedIndex));
     }
 
     private static void ClearChildren(RectTransform parent)
@@ -111,7 +130,7 @@ public class BattleActionUI : MonoBehaviour
 
     private static void EnsureEventSystem()
     {
-        if (FindObjectOfType<EventSystem>() != null)
+        if (FindFirstObjectByType<EventSystem>() != null)
         {
             return;
         }
